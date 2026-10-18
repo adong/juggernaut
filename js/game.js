@@ -1142,6 +1142,7 @@
     st.mode = m;
     st.modeT = 0;
     $('hud').classList.toggle('hidden', m === 'title' || m === 'loading');
+    $('menuMute').classList.toggle('hidden', m === 'play' || m === 'celebrate' || m === 'loading');
     layout();
   }
 

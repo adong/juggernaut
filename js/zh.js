@@ -55,7 +55,7 @@
 
     // HUD
     'HIGH FIVE': '击掌', 'GO! ➜': '冲啊！➜', JUMP: '跳', 'Pause (P)': '暂停 (P)', 'Sound (M)': '声音 (M)',
-    'he blocks hits': '他会帮你挡住攻击',
+    'he blocks hits': '他会帮你挡住攻击', 'Sound on or off': '声音开 / 关',
 
     // banners
     'WARNING!': '注意！', 'BONKED!': '被打晕啦！', 'HIGH FIVE!': '击掌！', 'CLEAR!': '过关！',

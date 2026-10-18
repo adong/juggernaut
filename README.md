@@ -32,9 +32,10 @@ On the title screen, tap your face to play alone (**TEDDY** or **TOMMY**), or ta
 | water balloon 🎈 (tank: cannon, Boing Bot: ground pound) | H | L | 🎈 |
 | hop out of a ride (bail out when it smokes) | S + jump | ↓ + jump | pad down + ⬆️ |
 | call your brother (1 player) · high five (2 players) | T | Enter | his face |
-| pause · sound | P or Esc · M | | ❚❚ · 🔊 at the top |
+| pause · sound on / off | P or Esc · M | | ❚❚ · 🔊 at the top |
 
 - **Shooting in 8 directions:** hold up to aim up, up + left or right to aim diagonally. In the air, down aims down (and down-diagonally). On the ground, down ducks: you shoot low and the shots fly over you.
+- **Sound on / off:** the white 🔊 button turns all the sound off (🔇) and on again: in a mission it's in the top bar next to ❚❚, and on the title, pause, end-of-mission and game-over screens it's in the top-right corner. M works anywhere. The choice is remembered (the kit's `claudeGames.muted`).
 - **Playing alone**, both key sets work, so the arrows and J K L work too.
 - **Touch:** the pad on the left runs and aims, and your blaster fires by itself whenever there's something to bonk. On a touch screen the ground sits a little higher, so the buttons never cover the brothers.
 - **Two players on an iPad:** Teddy has a pad and buttons on the left, Tommy on the right, and the high-five button sits at the top in the middle.

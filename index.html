@@ -211,6 +211,14 @@
   .tally .n { text-align: right; font-family: var(--display); font-weight: 400; color: var(--yellow); }
   .tally .tot { font-family: var(--display); font-weight: 400; color: var(--yellow); font-size: 18px; }
   #overEmoji, #winEmoji { font-size: clamp(54px, 12vh, 110px); line-height: 1; }
+  /* the sound button on the title and every other menu screen (in a mission it sits in the top bar) */
+  .ibtn.corner {
+    position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); width: 48px; height: 48px;
+    border-radius: 14px; font-size: 24px; border-width: 3px; box-shadow: 0 4px 0 var(--ink); pointer-events: auto;
+  }
+  /* the speaker emoji is dark grey: a light button so it shows */
+  .muteBtn { background: rgba(255, 255, 255, 0.92); border-color: var(--ink); }
+  .ibtn.corner:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
   #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #5fb4f0; font-family: var(--display); font-size: 28px; letter-spacing: 2px; padding: 24px; text-align: center; }
   @media (max-width: 640px) { .credit { display: none; } }
   @media (max-height: 520px) {
@@ -334,6 +342,8 @@
   <div class="row"><button id="winMenuBtn" class="btn pulse">MENU</button></div>
   <p class="hint">Enter · Esc menu</p>
 </div>
+
+<button id="menuMute" class="ibtn muteBtn corner hidden" title="Sound (M)" aria-label="Sound on or off">🔊</button>
 
 <div id="loading">LOADING…</div>
 
