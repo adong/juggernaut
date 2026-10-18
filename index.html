@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#5fb4f0">
+<title>Teddy &amp; Tommy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Lilita+One&family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #ffd400;
+    --pink: #ff3d7f;
+    --cyan: #18d4ff;
+    --blue: #3f86e8;
+    --mint: #7fdcbd;
+    --teddy-l: #9fd0ff;
+    --tommy-l: #9ff2d6;
+    --red: #ff4b5c;
+    --green: #7dff5a;
+    --ink: #14121f;
+    --panel: rgba(20, 22, 40, 0.58);
+    --display: 'Bungee', 'Arial Black', Impact, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden; color: #fff; background: #5fb4f0;
+    font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  kbd {
+    display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; margin: 1px;
+    font: 700 12px/1 system-ui, sans-serif; color: var(--ink); background: #fff; border-radius: 6px; box-shadow: 0 2px 0 #9aa;
+  }
+
+  /* ---------- HUD ---------- */
+  #hud { position: fixed; inset: 0; pointer-events: none; }
+  .card {
+    position: absolute; top: max(10px, env(safe-area-inset-top)); display: flex; gap: 8px; align-items: center;
+    padding: 6px 12px 6px 6px; border-radius: 16px; background: var(--panel); border: 3px solid var(--teddy-l); max-width: 46vw;
+  }
+  #card0 { left: max(10px, env(safe-area-inset-left)); }
+  #card1 { right: max(10px, env(safe-area-inset-right)); flex-direction: row-reverse; padding: 6px 6px 6px 12px; text-align: right; }
+  .card.tm { border-color: var(--tommy-l); }
+  .card .face { flex: none; width: 54px; height: 54px; border-radius: 13px; border: 3px solid #fff; background: radial-gradient(circle at 50% 35%, #a5dcff, #2a6fd0); overflow: hidden; }
+  .card.tm .face { background: radial-gradient(circle at 50% 35%, #d8fff0, #3fae8b); }
+  .card .face img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.15) translateY(4%); }
+  .card.out .face img { filter: grayscale(1); opacity: 0.6; }
+  .card .info { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  #card1 .info { align-items: flex-end; }
+  .card .nm { font-family: var(--display); font-size: 16px; line-height: 1; white-space: nowrap; }
+  .card .form { font: 800 10px/1 'Rubik', sans-serif; padding: 2px 6px; border-radius: 999px; background: var(--pink); border: 2px solid #fff; margin-left: 4px; vertical-align: 2px; }
+  .card .hearts { font-size: 15px; line-height: 1; letter-spacing: -1px; white-space: nowrap; min-height: 15px; }
+  .card .hearts i { font-style: normal; }
+  .card .hearts i.gone { opacity: 0.25; filter: grayscale(1); }
+  .card .gun { display: flex; align-items: center; gap: 5px; font: 800 11px/1 'Rubik', sans-serif; white-space: nowrap; min-height: 18px; }
+  .card .gun .t { padding: 2px 6px; border-radius: 8px; background: rgba(20, 18, 31, 0.55); }
+  .card .gun .e { font-size: 15px; }
+  .card .score { font: 800 13px/1 'Rubik', sans-serif; letter-spacing: 0.5px; min-height: 13px; }
+  .card.bump { background: rgba(255, 212, 0, 0.55); }
+  .card.hurt { background: rgba(255, 75, 92, 0.6); }
+
+  #top { position: absolute; top: max(10px, env(safe-area-inset-top)); left: 50%; translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .missionbox { display: flex; align-items: center; gap: 8px; padding: 5px 8px 5px 12px; border-radius: 16px; background: var(--panel); border: 3px solid rgba(255, 255, 255, 0.75); white-space: nowrap; }
+  .missionbox b { font-family: var(--display); font-weight: 400; font-size: 15px; line-height: 1; }
+  .missionbox small { font: 800 11px/1 'Rubik', sans-serif; opacity: 0.9; }
+  .ibtns { display: flex; gap: 6px; pointer-events: auto; }
+  .ibtn { width: 34px; height: 34px; border-radius: 10px; font-size: 15px; line-height: 1; background: rgba(20, 18, 31, 0.55); border: 2px solid rgba(255, 255, 255, 0.8); display: grid; place-items: center; }
+  #bossBar { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 14px; background: var(--panel); width: min(440px, 60vw); }
+  #bossBar b { font-family: var(--display); font-weight: 400; font-size: 13px; white-space: nowrap; }
+  #bossBar i { position: relative; flex: 1; height: 14px; border-radius: 7px; background: rgba(20, 18, 31, 0.6); border: 2px solid #fff; overflow: hidden; --fill: 1; }
+  #bossBar i::after { content: ''; position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--fill)); background: linear-gradient(90deg, #ff3d7f, #ffb02e); }
+  .gobox { font-family: var(--display); font-size: 22px; color: var(--yellow); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--ink); }
+
+  /* the companion's time bar (1 player) */
+  .budbar { position: absolute; display: flex; align-items: center; gap: 6px; padding: 4px 8px 4px 4px; border-radius: 14px; background: var(--panel); border: 3px solid var(--yellow); width: 170px; }
+  .budbar img { width: 30px; height: 30px; border-radius: 9px; border: 2px solid #fff; background: radial-gradient(circle at 50% 35%, #ffe2a0, #ff9f1c); object-fit: cover; }
+  .budbar i { position: relative; flex: 1; height: 12px; border-radius: 6px; background: rgba(20, 18, 31, 0.6); border: 2px solid rgba(255, 255, 255, 0.8); overflow: hidden; --fill: 0; }
+  .budbar i::after { content: ''; position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--fill)); background: linear-gradient(90deg, #9dff6a, #3fc22b); }
+  .budbar em { font-style: normal; font-size: 15px; }
+
+  /* the big companion button: his face; the ring shows his visit (1 player) or the high five's rest (2 players) */
+  .budbtn {
+    position: absolute; width: 100px; height: 100px; padding: 0; border-radius: 50%; pointer-events: auto; --fill: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: conic-gradient(var(--yellow) calc(var(--fill) * 360deg), rgba(20, 18, 31, 0.6) 0); border: 4px solid #fff; box-shadow: 0 6px 0 var(--ink);
+  }
+  .budbtn .pics { display: flex; width: 78px; height: 78px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 50% 35%, #ffe2a0, #ff9f1c); }
+  .budbtn .pics img { flex: 1; min-width: 0; height: 100%; object-fit: cover; }
+  .budbtn.two .pics img { object-position: 50% 30%; }
+  .budbtn small { position: absolute; bottom: -13px; left: 50%; translate: -50% 0; white-space: nowrap; font: 800 11px/1 'Rubik', sans-serif; letter-spacing: 0.5px; padding: 4px 9px; border-radius: 999px; background: var(--ink); border: 2px solid #fff; }
+  .budbtn kbd { position: absolute; top: 4px; right: 6px; min-width: 18px; height: 18px; font-size: 10px; }
+  .touch .budbtn kbd { display: none; }
+  .budbtn.on { background: conic-gradient(var(--green) calc(var(--fill) * 360deg), rgba(20, 18, 31, 0.6) 0); border-color: var(--yellow); box-shadow: 0 6px 0 var(--ink), 0 0 26px rgba(255, 212, 0, 0.95); }
+  .budbtn.rest .pics { filter: grayscale(1) brightness(0.85); }
+  .down { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink) !important; }
+  .no { animation: nope 0.3s linear; }
+  @keyframes nope { 25% { translate: -6px 0; } 75% { translate: 6px 0; } }
+
+  /* touch: a pad and two buttons per player (the blaster fires by itself on touch) */
+  #touch { position: fixed; inset: 0; pointer-events: none; display: none; }
+  .touch #touch.on { display: block; }
+  .pad { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: rgba(20, 18, 31, 0.35); border: 4px solid rgba(255, 255, 255, 0.7); pointer-events: auto; touch-action: none; }
+  .pad i { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); border: 4px solid var(--ink); }
+  .pad.tm { border-color: var(--tommy-l); }
+  .pad b { position: absolute; font-size: 15px; opacity: 0.8; }
+  .tbtn {
+    position: absolute; width: 86px; height: 86px; border-radius: 50%; pointer-events: auto; touch-action: none; display: flex;
+    flex-direction: column; align-items: center; justify-content: center; font-size: 32px; line-height: 1;
+    background: linear-gradient(160deg, #8fc2ff, var(--blue)); border: 4px solid #fff; box-shadow: 0 6px 0 var(--ink);
+  }
+  .tbtn.tm { background: linear-gradient(160deg, #c8ffe9, #2f9c79); }
+  .tbtn.small { width: 66px; height: 66px; font-size: 26px; }
+  .tbtn small { font: 800 10px/1 'Rubik', sans-serif; letter-spacing: 0.5px; white-space: nowrap; margin-top: 2px; }
+  .tbtn em { position: absolute; top: -6px; right: -6px; min-width: 28px; height: 28px; padding: 0 5px; border-radius: 14px; background: var(--yellow); color: var(--ink); border: 3px solid var(--ink); font: 400 14px/22px var(--display); font-style: normal; }
+
+  #toasts { position: fixed; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
+  .toast {
+    position: absolute; white-space: nowrap; font-family: var(--display); font-size: clamp(15px, 2.4vw, 26px); color: #fff; translate: -50% -50%;
+    padding: 4px 14px; border-radius: 16px; -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--ink);
+    background: rgba(20, 18, 31, 0.42);
+  }
+  .toast.good { color: var(--yellow); }
+  .toast.save { color: var(--cyan); font-size: clamp(19px, 3.4vw, 36px); }
+  .toast.oops { color: #ffb0b0; }
+  .toast.form { color: var(--green); font-size: clamp(18px, 3vw, 32px); }
+  .banner {
+    position: fixed; left: 50%; top: 40%; translate: -50% -50%; text-align: center; font-family: var(--display); pointer-events: none;
+    font-size: clamp(30px, 6vw, 72px); line-height: 1; color: var(--yellow); padding: 0 8px; white-space: nowrap;
+    -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 0 6px 0 var(--pink), 0 11px 0 var(--ink), 0 18px 30px rgba(0, 0, 0, 0.35);
+  }
+  .banner small { display: block; font-size: 0.36em; margin-top: 10px; color: #fff; -webkit-text-stroke: 2px var(--ink); text-shadow: 0 4px 0 var(--ink); }
+  .banner.warn { color: #ff5d6c; text-shadow: 0 6px 0 var(--yellow), 0 11px 0 var(--ink); }
+  .banner.go { color: var(--green); text-shadow: 0 6px 0 var(--blue), 0 11px 0 var(--ink); }
+  #flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; }
+
+  /* ---------- screens ---------- */
+  .screen {
+    position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: safe center;
+    gap: clamp(8px, 1.6vh, 16px); padding: 16px; text-align: center; overflow-y: auto;
+    background: radial-gradient(ellipse at center, rgba(20, 18, 40, 0.15), rgba(20, 18, 40, 0.62));
+  }
+  .screen > * { flex-shrink: 0; }
+  #title { background: radial-gradient(ellipse at center, rgba(20, 18, 40, 0.1), rgba(20, 18, 40, 0.45)); }
+  .logo { transform: rotate(-4deg); line-height: 0.9; margin-bottom: clamp(6px, 2vh, 18px); }
+  .logo span { display: block; font-family: var(--display); -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; }
+  .logo .l1 { color: #fff; font-size: clamp(18px, min(4.2vw, 4.6vh), 40px); text-shadow: 0 5px 0 var(--blue), 0 9px 0 var(--ink); }
+  /* the name has real lowercase letters (Alan's capital J and T at the ends), so not the all-caps display font */
+  .logo .l2 { font-family: 'Lilita One', 'Arial Black', Impact, sans-serif; color: var(--yellow); font-size: clamp(52px, min(13vw, 15vh), 150px); text-shadow: 0 6px 0 var(--pink), 0 11px 0 var(--ink), 0 18px 30px rgba(0, 0, 0, 0.35); letter-spacing: 2px; -webkit-text-stroke: 5px var(--ink); }
+  .logo .l2 span { display: inline; -webkit-text-stroke: inherit; font-family: inherit; }
+  .logo .a { color: var(--teddy-l); }
+  .logo .b { color: var(--tommy-l); }
+  .tag { font-size: clamp(14px, 2.2vw, 20px); font-weight: 800; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.5); }
+  .btn {
+    font-family: var(--display); font-size: clamp(17px, 3vw, 25px); color: var(--ink); pointer-events: auto;
+    background: var(--yellow); border: 4px solid var(--ink); border-radius: 20px; padding: 10px 22px;
+    box-shadow: 0 8px 0 var(--ink), 0 14px 30px rgba(0, 0, 0, 0.3);
+  }
+  .btn:hover { filter: brightness(1.06); }
+  .btn:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--ink); }
+  .btn.alt { background: var(--cyan); }
+  .btn.mint { background: var(--mint); }
+  .btn.ghost { background: #fff; }
+  .btn.small { font-size: clamp(14px, 2.2vw, 18px); padding: 7px 16px; border-radius: 15px; box-shadow: 0 6px 0 var(--ink); }
+  .btn small { display: block; font: 800 11px/1.2 'Rubik', sans-serif; letter-spacing: 0.5px; margin-top: 3px; }
+  .modes { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; align-items: stretch; }
+  .mode { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 16px 12px; min-width: 150px; }
+  .mode .pics { display: flex; gap: 2px; height: clamp(54px, 9vh, 84px); }
+  .mode .pics img { height: 100%; aspect-ratio: 1; border-radius: 14px; border: 3px solid var(--ink); background: radial-gradient(circle at 50% 35%, #a5dcff, #2a6fd0); }
+  .mode .pics img.tm { background: radial-gradient(circle at 50% 35%, #d8fff0, #3fae8b); }
+  .pulse { animation: pulse 1.3s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.05); } }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; }
+  .seg { display: flex; border-radius: 16px; overflow: hidden; border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink); pointer-events: auto; }
+  .seg button { padding: 7px 14px; font-family: var(--display); font-size: 15px; background: rgba(255, 255, 255, 0.85); color: var(--ink); }
+  .seg button small { display: block; font: 800 10px/1.1 'Rubik', sans-serif; }
+  .seg button[aria-checked="true"] { background: var(--yellow); }
+  .pick { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 16px; padding: 5px 8px; border-radius: 16px; background: rgba(20, 18, 31, 0.55); border: 3px solid rgba(255, 255, 255, 0.75); pointer-events: auto; }
+  .arrow { width: 38px; height: 38px; border-radius: 12px; font-size: 18px; background: rgba(255, 255, 255, 0.92); color: var(--ink); box-shadow: 0 4px 0 var(--ink); }
+  .arrow:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .arrow[disabled] { opacity: 0.35; }
+  #missionLabel { min-width: 220px; }
+  #missionLabel small { display: block; font: 800 11px/1.2 'Rubik', sans-serif; opacity: 0.9; }
+  .stars { font-size: 13px; letter-spacing: 1px; }
+  .keys {
+    display: grid; grid-template-columns: auto auto auto; gap: 3px 14px; align-items: center; text-align: left;
+    padding: 9px 14px; border-radius: 16px; background: rgba(20, 18, 31, 0.6); border: 2px solid rgba(255, 255, 255, 0.6);
+    font-size: 13px; font-weight: 700;
+  }
+  .keys .h { font-family: var(--display); font-size: 12px; font-weight: 400; letter-spacing: 1px; }
+  .keys .h.p1 { color: var(--teddy-l); }
+  .keys .h.p2 { color: var(--tommy-l); }
+  .touch-hint { display: none; font-weight: 700; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); max-width: 560px; }
+  .touch .keys { display: none; }
+  .touch .touch-hint { display: block; }
+  .credit { position: fixed; right: max(14px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); font-size: 13px; font-weight: 700; opacity: 0.9; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); pointer-events: none; }
+  .credit b { color: #ffe2a0; }
+  .big {
+    font-family: var(--display); font-size: clamp(36px, 8vw, 88px); line-height: 1; color: var(--cyan); transform: rotate(-3deg);
+    -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 0 7px 0 var(--yellow), 0 12px 0 var(--ink);
+  }
+  .big.yellow { color: var(--yellow); text-shadow: 0 7px 0 var(--pink), 0 12px 0 var(--ink); }
+  .hint { font-size: 13px; font-weight: 700; opacity: 0.9; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+  .stats { padding: 10px 16px; border-radius: 16px; background: rgba(20, 18, 31, 0.7); border: 2px solid rgba(255, 255, 255, 0.7); font-weight: 700; }
+  .tally { display: grid; grid-template-columns: auto auto; gap: 5px 18px; align-items: center; font: 800 15px/1.2 'Rubik', sans-serif; text-align: left; }
+  .tally .n { text-align: right; font-family: var(--display); font-weight: 400; color: var(--yellow); }
+  .tally .tot { font-family: var(--display); font-weight: 400; color: var(--yellow); font-size: 18px; }
+  #overEmoji, #winEmoji { font-size: clamp(54px, 12vh, 110px); line-height: 1; }
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #5fb4f0; font-family: var(--display); font-size: 28px; letter-spacing: 2px; padding: 24px; text-align: center; }
+  @media (max-width: 640px) { .credit { display: none; } }
+  @media (max-height: 520px) {
+    .card { padding: 4px 8px 4px 4px; gap: 6px; }
+    .card .face { width: 40px; height: 40px; }
+    .card .nm { font-size: 13px; }
+    .card .hearts { font-size: 13px; min-height: 13px; }
+    .card .score { display: none; }
+    .budbtn { width: 80px; height: 80px; }
+    .budbtn .pics { width: 60px; height: 60px; }
+    .missionbox b { font-size: 12px; }
+    .missionbox small { display: none; }
+    .ibtn { width: 30px; height: 30px; }
+    .pad { width: 120px; height: 120px; }
+    .pad i { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
+    .tbtn { width: 72px; height: 72px; font-size: 26px; }
+    .tbtn.small { width: 56px; height: 56px; font-size: 22px; }
+  }
+  @media (max-height: 430px) {
+    .screen { gap: 6px; padding: 8px; }
+    .logo .l1 { font-size: 16px; }
+    .logo .l2 { font-size: 44px; }
+    .tag { font-size: 13px; }
+    .mode { padding: 6px 12px 8px; min-width: 120px; font-size: 16px; }
+    .mode .pics { height: 44px; }
+    .touch .touch-hint { display: none; }
+    .keys { display: none; }
+    .big { font-size: 40px; }
+    .budbar { display: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="hud" class="hidden">
+  <div class="card" id="card0"><div class="face"><img alt=""></div><div class="info"><div class="nm"><span class="n">TEDDY</span><span class="form hidden"></span></div><div class="hearts"></div><div class="gun"></div><div class="score">0</div></div></div>
+  <div class="card tm" id="card1"><div class="face"><img alt=""></div><div class="info"><div class="nm"><span class="form hidden"></span><span class="n">TOMMY</span></div><div class="hearts"></div><div class="gun"></div><div class="score">0</div></div></div>
+  <div id="top">
+    <div class="missionbox"><b id="missionNo">MISSION 1</b><small id="missionName"></small><span class="ibtns"><button id="pauseBtn" class="ibtn" title="Pause (P)">❚❚</button><button class="ibtn muteBtn" title="Sound (M)">🔊</button></span></div>
+    <div id="bossBar" class="hidden"><b id="bossName"></b><i></i></div>
+    <div id="goBox" class="gobox hidden">GO! ➜</div>
+  </div>
+  <div class="budbar hidden" id="budBar"><img alt=""><i></i><em title="he blocks hits">🛡️</em></div>
+  <button id="budBtn" class="budbtn"><span class="pics"><img alt=""><img alt="" class="hidden"></span><small>CALL TOMMY</small><kbd>T</kbd></button>
+</div>
+
+<div id="touch">
+  <div class="pad" id="pad0"><i></i></div>
+  <div class="pad tm" id="pad1"><i></i></div>
+  <button class="tbtn" id="jump0">⬆️<small>JUMP</small></button>
+  <button class="tbtn small" id="bomb0">🎈<em>10</em></button>
+  <button class="tbtn tm" id="jump1">⬆️<small>JUMP</small></button>
+  <button class="tbtn small tm" id="bomb1">🎈<em>10</em></button>
+</div>
+
+<div id="toasts"></div>
+<div id="banner" class="banner hidden"></div>
+<div id="flash"></div>
+
+<div id="title" class="screen hidden">
+  <div class="logo"><span class="l1">TEDDY &amp; TOMMY</span><span class="l2" id="logoMain" data-no-lang></span></div>
+  <p class="tag">Run, jump and bonk the silly toy army!</p>
+  <div class="modes">
+    <button class="btn mode pulse" data-play="teddy"><span class="pics"><img alt="" data-face="teddy"></span>TEDDY<small>1 player · key 1</small></button>
+    <button class="btn mode mint" data-play="tommy"><span class="pics"><img alt="" class="tm" data-face="tommy"></span>TOMMY<small>1 player · key 2</small></button>
+    <button class="btn mode alt" data-play="both"><span class="pics"><img alt="" data-face="teddy"><img alt="" class="tm" data-face="tommy"></span>TEDDY + TOMMY<small>2 players together · key 3</small></button>
+  </div>
+  <div class="row">
+    <div class="seg" role="radiogroup" aria-label="Difficulty"><button data-level="easy" role="radio">🐣 EASY<small>more hearts, slow throws</small></button><button data-level="normal" role="radio">🔥 NORMAL<small>for big kids</small></button></div>
+    <div class="pick"><button class="arrow" data-m="-1" aria-label="Previous mission">◀</button><span id="missionLabel"></span><button class="arrow" data-m="1" aria-label="Next mission">▶</button></div>
+  </div>
+  <div class="keys">
+    <span></span><span class="h p1">TEDDY 1P</span><span class="h p2">TOMMY 2P</span>
+    <span>run · aim up / duck</span><span><kbd>A</kbd><kbd>D</kbd> · <kbd>W</kbd><kbd>S</kbd></span><span><kbd>←</kbd><kbd>→</kbd> · <kbd>↑</kbd><kbd>↓</kbd></span>
+    <span>fire (hold) · jump</span><span><kbd>F</kbd> · <kbd>G</kbd> or <kbd>Space</kbd></span><span><kbd>J</kbd> · <kbd>K</kbd></span>
+    <span>water balloon 🎈</span><span><kbd>H</kbd></span><span><kbd>L</kbd></span>
+    <span>call your brother · high five</span><span><kbd>T</kbd></span><span><kbd>Enter</kbd></span>
+    <span>hop out of a ride</span><span><kbd>S</kbd> + jump</span><span><kbd>↓</kbd> + jump</span>
+  </div>
+  <p class="touch-hint">The pad runs and aims, and your blaster fires by itself. ⬆️ jumps, 🎈 throws a water balloon, and your brother's face calls him in. Two players on an iPad: each one has a pad and buttons on their own side.</p>
+  <div class="credit">built with <b>Claude Code</b></div>
+</div>
+
+<div id="pause" class="screen hidden">
+  <div class="big">PAUSED</div>
+  <div class="row">
+    <button id="resumeBtn" class="btn">▶ RESUME</button>
+    <button id="restartBtn" class="btn small ghost">↻ RESTART MISSION</button>
+    <button id="quitBtn" class="btn small ghost">MENU</button>
+  </div>
+  <p class="hint">P · Esc to resume · R restart · Q menu · M sound</p>
+</div>
+
+<div id="tally" class="screen hidden">
+  <div class="big yellow" id="tallyTitle">MISSION 1 CLEAR!</div>
+  <div class="stats"><div class="tally" id="tallyGrid"></div></div>
+  <p class="tag" id="tallySub"></p>
+  <div class="row">
+    <button id="nextBtn" class="btn pulse">NEXT MISSION ▶</button>
+    <button id="tallyMenuBtn" class="btn small ghost">MENU</button>
+  </div>
+  <p class="hint">Enter · Space next · Esc menu</p>
+</div>
+
+<div id="over" class="screen hidden">
+  <div id="overEmoji">💫</div>
+  <div class="big" id="overTitle">BONKED!</div>
+  <p class="tag" id="overSub"></p>
+  <div class="row">
+    <button id="retryBtn" class="btn pulse">↻ TRY AGAIN</button>
+    <button id="overMenuBtn" class="btn small ghost">MENU</button>
+  </div>
+  <p class="hint">Enter try again · Esc menu</p>
+</div>
+
+<div id="win" class="screen hidden">
+  <div id="winEmoji">🏆</div>
+  <div class="big yellow" id="winTitle">YOU DID IT!</div>
+  <p class="tag" id="winSub"></p>
+  <div class="row"><button id="winMenuBtn" class="btn pulse">MENU</button></div>
+  <p class="hint">Enter · Esc menu</p>
+</div>
+
+<div id="loading">LOADING…</div>
+
+<script src="kit/three.min.js"></script>
+<script src="kit/gfx.js"></script>
+<script src="kit/people.js"></script>
+<script src="kit/roster.js"></script>
+<script src="kit/portraits.js"></script>
+<script src="kit/sound.js"></script>
+<script src="kit/lang.js"></script>
+<script src="kit/help.js"></script>
+<script src="js/title.js"></script>
+<script src="js/missions.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/brain.js"></script>
+<script src="js/check.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/art.js"></script>
+<script src="js/game.js"></script>
+<script src="js/keys.js"></script>
+<script src="js/zh.js"></script>
+</body>
+</html>
